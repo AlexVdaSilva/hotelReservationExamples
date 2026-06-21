@@ -5,33 +5,38 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
-import entities.Reservation;
+import model.entities.Reservation;
+import model.exceptions.DomainException;
 
 public class Program {
 
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) {
 
-		// In this Version, The Code was modified
-		// Changing the Validation of the Dates
-		// And the updateDates to the class Reservation
-		// Giving it a better skin, but, by another way
-		// I should be keep The Validation at the time
-		// Of instantiating the object on the
-		//Program Class, classifying it as a bad code.
+		// Final code refactoring. In this step, I renamed the
+		// 'entities' package to 'model.entities' to follow best practices.
+		// I also created the 'model.exceptions' package to house the
+		// custom 'DomainException' class, which handles date validation errors
+		// (e.g., past dates or check-out before check-in).
+		//
+		// In Program.java, the code now handles three specific exceptions,
+		// including 'ParseException' for invalid date formats and 'DomainException'.
+		// Additionally, the instantiation of the custom exception was moved
+		// inside the Reservation class. In the previous "bad version",
+		// updateDates returned a String, and the error handling/printing
+		// relied on if-else structures within the main program.
+
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 		Scanner sc = new Scanner(System.in);
 
-		System.out.print("Room number: ");
-		int rNumber = sc.nextInt();
-		System.out.print("Check-in date (dd/MM/yyyy): ");
-		Date checkIn = sdf.parse(sc.next());
-		System.out.print("Check-out date (dd/MM/yyyy): ");
-		Date checkOut = sdf.parse(sc.next());
+		try {
+			System.out.print("Room number: ");
+			int rNumber = sc.nextInt();
+			System.out.print("Check-in date (dd/MM/yyyy): ");
+			Date checkIn = sdf.parse(sc.next());
+			System.out.print("Check-out date (dd/MM/yyyy): ");
+			Date checkOut = sdf.parse(sc.next());
 
-		if (!checkOut.after(checkIn)) {
-			System.out.println("Error in reservation: Check-out date must be after check-in date.");
-		} else {
 			Reservation r = new Reservation(rNumber, checkIn, checkOut);
 			System.out.println("Reservation: " + r);
 
@@ -42,17 +47,19 @@ public class Program {
 			System.out.print("Check-out date (dd/MM/yyyy): ");
 			checkOut = sdf.parse(sc.next());
 
-			String error = r.updateDates(checkIn, checkOut);
-			
-			if (error != null) {
-				System.out.println("Error in reservation: " + error);
-			}
-			else {
-				System.out.println("Reservation: " + r);
-			}
-			
+			r.updateDates(checkIn, checkOut);
+			System.out.println("Reservation: " + r);
 		}
-
+		catch (ParseException e) {
+			System.out.println("Invalid date format.");
+		}
+		catch (DomainException e) {
+			System.out.println("Error in reservation: " + e.getMessage());
+		}
+		catch (RuntimeException e) {
+			System.out.println("Unexpected error.");
+		}
+		
 		sc.close();
 
 	}
